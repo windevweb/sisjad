@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengelola Jadwal PKL</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+  <!-- Navbar -->
+  <nav class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-md sm:p-6">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-lg sm:text-xl font-bold">PKL Manager</h1>
+      <div class="hidden sm:flex space-x-4">
+        <a href="schedule.html" class="hover:text-blue-200 transition duration-300">Pengelola Jadwal</a>
+        <a href="#reminder" class="hover:text-blue-200 transition duration-300">Pengingat</a>
+      </div>
+      <!-- Mobile Menu -->
+      <div class="sm:hidden">
+        <button id="menuButton" class="text-white focus:outline-none">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+        <div id="mobileMenu" class="hidden absolute top-16 right-4 bg-white rounded-lg shadow-md p-4 w-48">
+          <a href="schedule.html" class="block text-gray-700 hover:text-blue-600 mb-2">Pengelola Jadwal</a>
+          <a href="#reminder" class="block text-gray-700 hover:text-blue-600">Pengingat</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-br from-blue-700 via-purple-600 to-indigo-500 text-white py-16 sm:py-20 rounded-b-[4rem]">
+    <div class="container mx-auto text-center px-4">
+      <h2 class="text-4xl sm:text-5xl font-bold mb-6 animate-fade-in">Welcome di PKL Manager</h2>
+      <p class="text-base sm:text-lg mb-8">Mengelola jadwal PKL si Nunu dengan mudah dan efisien.</p>
+      <a href="schedule.html" class="bg-white text-blue-600 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold hover:bg-opacity-90 transition duration-300">
+        Mulai Sekarang
+      </a>
+    </div>
+  </section>
+
+  <!-- Reminder Section -->
+  <section id="reminder" class="py-8 sm:py-12 bg-white">
+    <div class="container mx-auto px-4">
+      <h2 class="text-xl sm:text-2xl font-bold text-center mb-8 sm:mb-10 text-blue-600">Jadwal PKL Hari Ini & Besok</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+        <!-- Jadwal Hari Ini -->
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-blue-500 transform transition-transform hover:scale-105">
+          <h3 class="text-lg sm:text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-calendar-day mr-2 text-blue-600"></i> Hari Ini
+          </h3>
+          <ul id="todaySchedule" class="space-y-2">
+            <!-- Dynamic Content Will Be Rendered Here -->
+          </ul>
+        </div>
+        <!-- Jadwal Besok -->
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-green-500 transform transition-transform hover:scale-105">
+          <h3 class="text-lg sm:text-xl font-semibold mb-4 flex items-center">
+            <i class="fas fa-calendar-alt mr-2 text-green-600"></i> Besok
+          </h3>
+          <ul id="tomorrowSchedule" class="space-y-2">
+            <!-- Dynamic Content Will Be Rendered Here -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- News Section -->
+  <section class="py-8 sm:py-12 bg-gray-100">
+    <div class="container mx-auto px-4">
+      <h2 class="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10 text-blue-600">Informasi Baru Banget</h2>
+      <div class="relative overflow-hidden">
+        <div id="newsCarousel" class="flex transition-transform duration-500 ease-in-out">
+          <!-- News Cards -->
+          <div class="min-w-full sm:min-w-[calc(100%/2)] md:min-w-[calc(100%/3)] p-4">
+            <div class="bg-white overflow-hidden border-b-4 border-blue-500 rounded-lg shadow-md">
+              <img src="https://images.unsplash.com/photo-1573748240263-a4e9c57a7fcd" alt="Placeholder Image" class="w-full object-cover h-32">
+              <div class="p-4">
+                <p class="text-blue-500 font-semibold text-xs mb-1 leading-none">Loading...</p>
+                <h3 class="font-semibold mb-2 text-sm leading-tight sm:leading-normal">Memuat Berita...</h3>
+                <div class="text-xs flex items-center">
+                  <svg class="opacity-75 mr-2" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 97.16 97.16">
+                    <path d="M48.58,0C21.793,0,0,21.793,0,48.58s21.793,48.58,48.58,48.58s48.58-21.793,48.58-48.58S75.367,0,48.58,0z M48.58,86.823c-21.087,0-38.244-17.155-38.244-38.243S27.493,10.337,48.58,10.337S86.824,27.492,86.824,48.58S69.667,86.823,48.58,86.823z"/>
+                    <path d="M73.898,47.08H52.066V20.83c0-2.209-1.791-4-4-4c-2.209,0-4,1.791-4,4v30.25c0,2.209,1.791,4,4,4h25.832c2.209,0,4-1.791,4-4S76.107,47.08,73.898,47.08z"/>
+                  </svg>
+                  <p class="leading-none">Memuat tanggal...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Navigation Buttons -->
+      <div class="flex justify-center mt-6 space-x-4">
+        <button id="prevNews"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="nextNews"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition duration-300">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Placeholder -->
+  <footer id="footerPlaceholder" class="mt-8"></footer>
+
+  <!-- JavaScript -->
+  <script>
+    // Initialize Supabase Client
+    const supabaseUrl = 'https://eyzvqdknrkkjznqvmxgb.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5enZxZGtucmtranpucXZteGdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg0OTc1NzksImV4cCI6MjA1NDA3MzU3OX0.v-3bKrF431br9SKSXPzUOHU-f4CW_4SAgtSic502sbs';
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    let currentIndex = 0;
+
+    // Load Schedules for Today and Tomorrow
+    async function loadSchedules() {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const formatDate = (date) => date.toISOString().split('T')[0];
+
+      const { data, error } = await supabaseClient
+        .from('schedules')
+        .select('*')
+        .or(`date.eq.${formatDate(today)},date.eq.${formatDate(tomorrow)}`)
+        .order('date', { ascending: true });
+
+      if (error) {
+        console.error('Error loading schedules:', error);
+      } else {
+        renderSchedules(data, formatDate(today), formatDate(tomorrow));
+      }
+    }
+
+    // Format Date (e.g., "Senin, 13 Februari")
+    function formatDate(dateString) {
+      const options = { weekday: 'long', day: 'numeric', month: 'long' };
+      return new Date(dateString).toLocaleDateString('id-ID', options);
+    }
+
+    // Check if Schedule is Live
+    function isLive(scheduleDate, scheduleShift) {
+      const now = new Date();
+      const scheduleDateTime = new Date(scheduleDate);
+
+      // Compare dates
+      if (scheduleDateTime.toDateString() !== now.toDateString()) {
+        return false;
+      }
+
+      // Check shift time
+      const hours = now.getHours();
+      if (scheduleShift === 'Pagi' && hours >= 8 && hours < 12) {
+        return true;
+      } else if (scheduleShift === 'Siang' && hours >= 12 && hours < 16) {
+        return true;
+      } else if (scheduleShift === 'Sore' && hours >= 16 && hours < 20) {
+        return true;
+      }
+      return false;
+    }
+
+    // Render Schedules
+    function renderSchedules(schedules, todayDate, tomorrowDate) {
+      const todaySchedule = document.getElementById('todaySchedule');
+      const tomorrowSchedule = document.getElementById('tomorrowSchedule');
+
+      // Clear existing content
+      todaySchedule.innerHTML = '';
+      tomorrowSchedule.innerHTML = '';
+
+      // Filter schedules for today and tomorrow
+      const todaySchedules = schedules.filter(schedule => schedule.date === todayDate);
+      const tomorrowSchedules = schedules.filter(schedule => schedule.date === tomorrowDate);
+
+      // Render Today's Schedule
+      if (todaySchedules.length === 0) {
+        todaySchedule.innerHTML = '<li class="text-gray-500">Tidak ada jadwal hari ini.</li>';
+      } else {
+        todaySchedules.forEach((schedule) => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('flex', 'items-center', 'text-gray-700');
+
+          // Check if Live
+          const liveIcon = isLive(schedule.date, schedule.shift)
+            ? '<i class="fas fa-circle text-red-500 animate-pulse ml-2"></i>'
+            : '';
+
+          listItem.innerHTML = `
+            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+            <span>${schedule.day}, ${formatDate(schedule.date)} - ${schedule.shift} ${liveIcon}</span>
+          `;
+          todaySchedule.appendChild(listItem);
+        });
+      }
+
+      // Render Tomorrow's Schedule
+      if (tomorrowSchedules.length === 0) {
+        tomorrowSchedule.innerHTML = '<li class="text-gray-500">Tidak ada jadwal besok.</li>';
+      } else {
+        tomorrowSchedules.forEach((schedule) => {
+          const listItem = document.createElement('li');
+          listItem.classList.add('flex', 'items-center', 'text-gray-700');
+
+          listItem.innerHTML = `
+            <i class="fas fa-check-circle text-green-500 mr-2"></i>
+            <span>${schedule.day}, ${formatDate(schedule.date)} - ${schedule.shift}</span>
+          `;
+          tomorrowSchedule.appendChild(listItem);
+        });
+      }
+    }
+
+    // Fetch Footer
+    fetch('footer.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('footerPlaceholder').innerHTML = data;
+      })
+      .catch(error => {
+        console.error('Error fetching footer:', error);
+        document.getElementById('footerPlaceholder').innerHTML = `
+          <footer class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-4 sm:py-6 mt-8">
+            <div class="container mx-auto text-center">
+              Footer tidak dapat dimuat.
+            </div>
+          </footer>
+        `;
+      });
+
+    // Load News for Carousel
+    async function loadNews() {
+      const { data, error } = await supabaseClient
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading news:', error);
+      } else {
+        renderNewsCarousel(data);
+        startAutoScroll();
+      }
+    }
+
+    // Render News Carousel
+    function renderNewsCarousel(news) {
+      const newsCarousel = document.getElementById('newsCarousel');
+      newsCarousel.innerHTML = ''; // Clear existing content
+
+      if (news.length === 0) {
+        newsCarousel.innerHTML = `
+          <div class="min-w-full sm:min-w-[calc(100%/2)] md:min-w-[calc(100%/3)] p-4">
+            <div class="bg-white overflow-hidden border-b-4 border-blue-500 rounded-lg shadow-md">
+              <img src="https://images.unsplash.com/photo-1573748240263-a4e9c57a7fcd" alt="Placeholder Image" class="w-full object-cover h-32">
+              <div class="p-4">
+                <p class="text-blue-500 font-semibold text-xs mb-1 leading-none">Berita</p>
+                <h3 class="font-semibold mb-2 text-sm leading-tight sm:leading-normal">Tidak ada berita tersedia.</h3>
+                <div class="text-xs flex items-center">
+                  <svg class="opacity-75 mr-2" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 97.16 97.16">
+                    <path d="M48.58,0C21.793,0,0,21.793,0,48.58s21.793,48.58,48.58,48.58s48.58-21.793,48.58-48.58S75.367,0,48.58,0z M48.58,86.823c-21.087,0-38.244-17.155-38.244-38.243S27.493,10.337,48.58,10.337S86.824,27.492,86.824,48.58S69.667,86.823,48.58,86.823z"/>
+                    <path d="M73.898,47.08H52.066V20.83c0-2.209-1.791-4-4-4c-2.209,0-4,1.791-4,4v30.25c0,2.209,1.791,4,4,4h25.832c2.209,0,4-1.791,4-4S76.107,47.08,73.898,47.08z"/>
+                  </svg>
+                  <p class="leading-none">Tidak ada tanggal</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;        return;
+      }
+
+      news.forEach((item) => {
+        const card = document.createElement('div');
+        card.classList.add('min-w-full', 'sm:min-w-[calc(100%/2)]', 'md:min-w-[calc(100%/3)]', 'p-4');
+
+        // Use Unsplash for dynamic images
+        const imageUrl = `https://images.unsplash.com/photo-1672870153618-b369bcc8c55d?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D`;
+
+        card.innerHTML = `
+          <a href="detail-news.html?id=${item.id}" class="block bg-white overflow-hidden border-b-4 border-blue-500 rounded-lg shadow-md transform transition-transform hover:scale-105">
+            <img src="${imageUrl}" alt="${item.title}" class="w-full object-cover h-32">
+            <div class="p-4">
+              <p class="text-blue-500 font-semibold text-xs mb-1 leading-none">Berita</p>
+              <h3 class="font-semibold mb-2 text-sm leading-tight sm:leading-normal">${item.title}</h3>
+              <div class="text-xs flex items-center">
+                <svg class="opacity-75 mr-2" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 97.16 97.16">
+                  <path d="M48.58,0C21.793,0,0,21.793,0,48.58s21.793,48.58,48.58,48.58s48.58-21.793,48.58-48.58S75.367,0,48.58,0z M48.58,86.823c-21.087,0-38.244-17.155-38.244-38.243S27.493,10.337,48.58,10.337S86.824,27.492,86.824,48.58S69.667,86.823,48.58,86.823z"/>
+                  <path d="M73.898,47.08H52.066V20.83c0-2.209-1.791-4-4-4c-2.209,0-4,1.791-4,4v30.25c0,2.209,1.791,4,4,4h25.832c2.209,0,4-1.791,4-4S76.107,47.08,73.898,47.08z"/>
+                </svg>
+                <p class="leading-none">${new Date(item.created_at).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </a>
+        `;
+        newsCarousel.appendChild(card);
+      });
+
+      updateCarousel();
+    }
+
+    // Update Carousel Position
+    function updateCarousel() {
+      const cardWidth = document.querySelector('#newsCarousel > div').offsetWidth;
+      const newsCarousel = document.getElementById('newsCarousel');
+      newsCarousel.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+    }
+
+    // Previous Button
+    document.getElementById('prevNews').addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCarousel();
+      }
+    });
+
+    // Next Button
+    document.getElementById('nextNews').addEventListener('click', () => {
+      const totalCards = document.querySelectorAll('#newsCarousel > div').length;
+      if (currentIndex < totalCards - 1) {
+        currentIndex++;
+        updateCarousel();
+      }
+    });
+
+    // Auto Scroll Carousel
+    let autoScrollInterval;
+
+    function startAutoScroll() {
+      autoScrollInterval = setInterval(() => {
+        const totalCards = document.querySelectorAll('#newsCarousel > div').length;
+        if (currentIndex < totalCards - 1) {
+          currentIndex++;
+        } else {
+          currentIndex = 0; // Loop back to the first card
+        }
+        updateCarousel();
+      }, 5000); // Change slide every 5 seconds
+    }
+
+    function stopAutoScroll() {
+      clearInterval(autoScrollInterval);
+    }
+
+    // Mobile Menu Toggle
+    document.getElementById('menuButton').addEventListener('click', () => {
+      const mobileMenu = document.getElementById('mobileMenu');
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Close Mobile Menu on Click Outside
+    document.addEventListener('click', (event) => {
+      const menuButton = document.getElementById('menuButton');
+      const mobileMenu = document.getElementById('mobileMenu');
+      if (!menuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+
+    // Initialize App
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSchedules(); // Load schedules when the page loads
+      loadNews(); // Load news for carousel
+    });
+  </script>
+</body>
+</html>

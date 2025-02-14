@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Kelola Berita</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Quill.js CDN -->
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-md sm:p-6">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-lg sm:text-xl font-bold">Admin Panel</h1>
+      <a href="index.html" class="hover:text-blue-200 transition duration-300 flex items-center">
+        <i class="fas fa-home mr-2"></i> Kembali ke Beranda
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="py-8">
+    <div class="container mx-auto px-4">
+      <!-- Button to Open Pop-Up Form -->
+      <div class="flex justify-end mb-8">
+        <button id="openFormButton"
+          class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-full font-semibold hover:from-blue-700 hover:to-blue-900 transition duration-300 flex items-center">
+          <i class="fas fa-plus mr-2"></i> Tambah Berita
+        </button>
+      </div>
+
+      <!-- News List -->
+      <h2 class="text-3xl font-bold text-center mb-8 text-blue-600">Daftar Berita</h2>
+      <div id="newsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dynamic Cards Will Be Rendered Here -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Pop-Up -->
+  <div id="notification" class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-md transform scale-0 transition-transform duration-300 ease-in-out">
+    Notifikasi berhasil!
+  </div>
+
+  <!-- Pop-Up Form -->
+  <div id="popupForm" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl transform scale-95 opacity-0 transition-all duration-300 ease-in-out">
+      <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Kelola Berita</h2>
+      <form id="newsForm" class="space-y-6">
+        <input type="hidden" id="newsId" value="">
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700">Judul Berita</label>
+          <input type="text" id="title" placeholder="Masukkan judul berita" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label for="content" class="block text-sm font-medium text-gray-700">Isi Berita</label>
+          <div id="editor-container" class="border border-gray-300 rounded mt-2">
+            <!-- Quill Editor Will Be Rendered Here -->
+          </div>
+        </div>
+        <div class="flex justify-end space-x-4">
+          <button type="button" id="closeFormButton"
+            class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-300">
+            Batal
+          </button>
+          <button type="submit"
+            class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-blue-900 transition duration-300">
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // Initialize Supabase Client
+    const supabaseUrl = 'https://eyzvqdknrkkjznqvmxgb.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5enZxZGtucmtranpucXZteGdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg0OTc1NzksImV4cCI6MjA1NDA3MzU3OX0.v-3bKrF431br9SKSXPzUOHU-f4CW_4SAgtSic502sbs';
+
+    const { createClient } = supabase;
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    let newsItems = [];
+    let quill;
+
+    // Initialize Quill Editor
+    document.addEventListener('DOMContentLoaded', () => {
+      quill = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'image'],
+            [{ align: [] }],
+            [{ color: [] }, { background: [] }]
+          ]
+        }
+      });
+
+      loadNews(); // Load news when the page loads
+    });
+
+    // Load News from Supabase
+    async function loadNews() {
+      const { data, error } = await supabaseClient
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading news:', error);
+      } else {
+        newsItems = data; // Update local news array
+        renderNews();
+      }
+    }
+
+    // Render News
+    function renderNews() {
+      const newsList = document.getElementById('newsList');
+      newsList.innerHTML = '';
+      newsItems.forEach((news, index) => {
+        const card = document.createElement('div');
+        card.classList.add(
+          'bg-white',
+          'p-6',
+          'rounded-lg',
+          'shadow-md',
+          'transform',
+          'transition-transform',
+          'hover:scale-105'
+        );
+
+        card.innerHTML = `
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-blue-600">${news.title}</h3>
+            <div class="flex space-x-2">
+              <button onclick="editNews(${index})"
+                class="bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 transition duration-300">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteNews(${index})"
+                class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition duration-300">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="text-sm text-gray-600" style="white-space: pre-wrap;">${news.content}</div>
+        `;
+        newsList.appendChild(card);
+      });
+    }
+
+    // Show Notification
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+
+      // Set background color based on type
+      if (type === 'success') {
+        notification.classList.remove('bg-red-500');
+        notification.classList.add('bg-green-500');
+      } else if (type === 'error') {
+        notification.classList.remove('bg-green-500');
+        notification.classList.add('bg-red-500');
+      }
+
+      // Show notification with animation
+      notification.classList.remove('hidden', 'scale-0');
+      notification.classList.add('opacity-100', 'scale-100');
+
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        notification.classList.remove('opacity-100', 'scale-100');
+        notification.classList.add('hidden', 'scale-0');
+      }, 3000);
+    }
+
+    // Add or Update News in Supabase
+    async function saveNews(id, title, content) {
+      if (id) {
+        // Update existing news
+        const { error } = await supabaseClient
+          .from('news')
+          .update({ title, content })
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error updating news:', error);
+          showNotification('Gagal memperbarui berita!', 'error');
+        } else {
+          loadNews(); // Reload news after updating
+          showNotification('Berita berhasil diperbarui!');
+        }
+      } else {
+        // Add new news
+        const { error } = await supabaseClient
+          .from('news')
+          .insert([{ title, content }]);
+
+        if (error) {
+          console.error('Error adding news:', error);
+          showNotification('Gagal menambahkan berita!', 'error');
+        } else {
+          loadNews(); // Reload news after adding
+          showNotification('Berita berhasil ditambahkan!');
+        }
+      }
+
+      document.getElementById('popupForm').classList.add('hidden', 'opacity-0', 'pointer-events-none');
+      document.getElementById('newsForm').reset();
+      quill.setContents([]); // Clear Quill editor
+    }
+
+    // Delete News from Supabase
+    async function deleteNews(index) {
+      const newsId = newsItems[index].id;
+
+      const { error } = await supabaseClient
+        .from('news')
+        .delete()
+        .eq('id', newsId);
+
+      if (error) {
+        console.error('Error deleting news:', error);
+        showNotification('Gagal menghapus berita!', 'error');
+      } else {
+        loadNews(); // Reload news after deletion
+        showNotification('Berita berhasil dihapus!');
+      }
+    }
+
+    // Edit News
+    function editNews(index) {
+      const news = newsItems[index];
+      document.getElementById('newsId').value = news.id;
+      document.getElementById('title').value = news.title;
+      quill.root.innerHTML = news.content; // Set Quill editor content
+
+      const popupForm = document.getElementById('popupForm');
+      popupForm.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      popupForm.querySelector('.transform').classList.remove('scale-95', 'opacity-0');
+      popupForm.querySelector('.transform').classList.add('scale-100', 'opacity-100');
+    }
+
+    // Handle Form Submission
+    document.getElementById('newsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('newsId').value;
+      const title = document.getElementById('title').value;
+      const content = quill.root.innerHTML; // Get HTML content from Quill
+
+      if (title && content) {
+        await saveNews(id, title, content);
+      } else {
+        showNotification('Silakan isi semua field!', 'error');
+      }
+    });
+
+    // Toggle Pop-Up Form
+    document.getElementById('openFormButton').addEventListener('click', () => {
+      const popupForm = document.getElementById('popupForm');
+      popupForm.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      popupForm.classList.add('opacity-100', 'pointer-events-auto');
+      popupForm.querySelector('.transform').classList.remove('scale-95', 'opacity-0');
+      popupForm.querySelector('.transform').classList.add('scale-100', 'opacity-100');
+    });
+
+    document.getElementById('closeFormButton').addEventListener('click', () => {
+      const popupForm = document.getElementById('popupForm');
+      popupForm.querySelector('.transform').classList.remove('scale-100', 'opacity-100');
+      popupForm.querySelector('.transform').classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        popupForm.classList.add('hidden', 'opacity-0', 'pointer-events-none');
+      }, 300); // Match the duration of the transition
+    });
+  </script>
+</body>
+</html>
